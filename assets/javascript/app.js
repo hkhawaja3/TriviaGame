@@ -1,107 +1,262 @@
-$(document).ready(function(){
-  console.log("Ready!");
-  //question array starts at zero/beginning
-  var currentQuestion = 0;
-  //score starts at zero
-  var score = 0;
-  index = 0
-  
-  //reveals intro text on click event, calls function for running game, fill value of button with 'start game'
-  $("#startGame").on("click", beginGame); {
-    $("#startGame").val("Start Game");
-  }
-  //function for event listener, shows intro text, starts game
-  function beginGame() {
-    console.log("do it!");
-    $("#trivia .totalScore").remove();
-    $(".intro").fadeIn("slow");
-    if (currentQuestion < triviaQuestions.length) {
-      $("#startGame").val("Next Question")
-      $("#questionBox").remove();
-      $(".optionsList").remove();
-      $("p.questions").append('<p id="questionBox">' + triviaQuestions[currentQuestion].question + '</p>');
-      $("p.options").append("<p id='quizBox'>");
-      var selections = triviaQuestions[currentQuestion].selection;
-      console.log(triviaQuestions[currentQuestion])
-      console.log(selections);
-      for (var i = 0; i < selections.length; i++) {
-        $("#quizBox").append("<label><div class='optionsList'><input class='selectRadio' type='radio' name='" + selections[i] +"'/>" + selections[i] + '<br /></div></label>');
-      }
-      $("#startGame").prepend("</p>");
+/*  Pseudocode for trivia game
 
-      $("div.optionsList").on("click",".selectRadio", function() {
-        console.log("optionsList click event");
-        console.log($(this).attr("name"));
-        console.log(currentQuestion);
-        console.log(triviaQuestions[currentQuestion-1])
-        console.log(triviaQuestions[currentQuestion-1].correctSelection );
-        if ($(this).attr("name") === triviaQuestions[currentQuestion-1].correctSelection) {
-          score++;
-          console.log(score);
+
+1. [x] Declare Global Variables & Counters: Time, Correct Answers, Wrong Answers, etc.
+2. [x] Create Questions & Answers: Declare the following arrays: questionArray, answerArray, emptyArray
+3. [x] Create timer function: setInterval
+4. [] Set onclick functions for userGuess from answers array
+5. [] Create conditions for answers or no answer (Time up game over)
+
+6. [x] Add points for correct answers
+7. [x] Add points for incorrect answers
+8. [] Add points for incomplete answers (if timeout is reached)
+9. [x] show score at the end of the game
+10.[x] reset button to start quiz over
+
+*/
+
+
+//Run JS program when page is loaded
+$(document).ready(function() {
+
+    //Object for Michael Jordan Questions and Answers
+
+
+    var nbaTrivia = [{
+            question: "Who won the 2001 NBA Most Valuable Player?",
+            options: ["Allen Iverson", "Kobe Bryant", "Tim Duncan", "Tracy McGrady"],
+            answer: "Allen Iverson"
+
+        }, {
+            question: "How many NBA Championships has Michael Jordan won?",
+            options: ['3', '6', '8', '10'],
+            answer: '6'
+        }, {
+            question: "Which franchise has the most NBA championships?",
+            options: ["New York Knicks", "Los Angeles Lakers", "Chicago Bulls", "Boston Celtics"],
+            answer: "Boston Celtics"
+        }, {
+            question: "Which player made 400 3pt shots in a regular season?",
+            options: ["Ray Allen", "Steve Nash", "Reggie Miller", "Stephen Curry"],
+            answer: "Stephen Curry"
+        },
+
+    ];
+
+    //image arrays
+
+    var correctImageArray = ['assets/images/iverson.gif', 'assets/images/Correct1.gif',
+        'assets/images/KG.gif', 'assets/images/stephcurry.gif'
+    ];
+
+    var incorrectImageArray = ['assets/images/wrong1.gif','assets/images/wrong2.gif',
+    'assets/images/wrong3.gif','assets/images/wrong4.gif',]
+
+    console.log(nbaTrivia);
+
+    //Global Variables
+
+    var time = 24; //Time to countdown per question
+    var intervalID; //Interval
+    var count = -1; //traverse through nbaTrivia object questions
+    var correct = 0; //counter for correct responses
+    var incorrect = 0; //counter for incorrect responses
+    var unanswered = 0;
+    var userSelections //empty var for user selection
+
+
+
+
+    startGame();
+
+    //Starts game
+
+    function startGame() {
+
+        var $game = $('.question');
+
+        $game.html('<h1>Let\'s test your basketball IQ</h1>');
+
+        var startButton = $(document.createElement('button'));
+        startButton.addClass('btn-lg btn-block start-button');
+
+        startButton = startButton.html('Start Quiz');
+
+        $game.append(startButton);
+
+        $('.start-button').on('click', function(event) {
+
+            startButton.remove();
+            nextQuestion();
+            audio();
+        })
+    }
+
+    //function for timer and call countdown function
+
+    function countdown() {
+
+        time--;
+
+        $('.timer').html('<h2>Time</h2> <p><h3>' + time + '</h3></p>');
+
+        if (time === 0) {
+            unanswered++;
+            clearInterval(intervalID);
+            nextQuestion();
+
         }
-      });
-      currentQuestion++;
+
     }
-    else {
-      //$("p.questions").remove();
-      //$("p.options").remove();
-      $("#questionBox").remove();
-      $(".optionsList").remove();
-      $("#startGame").before('<h2 class="totalScore"> Final score: ' + score + ' / 8 questions correct!</h2>');
-      $("#startGame").val("Play Again");
-      //$("#startGame").remove();
-      //$("#playAgain").show();
-      //resets to play again
-      currentQuestion = 0;
-      score = 0;
+
+
+    //function for playing audio file "Basketball"
+
+    function audio() {
+
+        $('#basketball').get(0).play();
+
     }
-  }
 
 
 
 
 
-  //question/answer array of an array stored in a variable
-  var triviaQuestions = [
-    {
-      question: "Who won the 2001 NBA Most Valuable Player?",
-      selection: ["Allen Iverson", "Kobe Bryant", "Tim Duncan", "Tracy McGrady" ],
-      correctSelection: "Allen Iverson"
-    },
-    {
-      question: "Which team made the largest NBA comeback in a game?",
-      selection: ["Utah Jazz", "Sacramento Kings", "Chicago Bulls", "Los Angeles Lakers"],
-      correctSelection: "Utah Jazz"
-    },
-    {
-      question: "Who scored the most points in an NBA game?",
-      selection: ["Kobe Bryant", "Wilt Chamberlain", "Michael Jordan", "LeBron James"],
-      correctSelection: "Wilt Chamberlain"
-    },
-    {
-      question: "Which player has the most NBA championships?",
-      selection: ["Sam Jones", "Tom Sanders", "Bill Russell", "Robert Horry"],
-      correctSelection: "Bill Russell"
-    },
-    {
-      question: "Which player has the most recorded triple doubles?",
-      selection: ["Magic Johnson", "Jason Kidd", "Oscar Roberston", "Russell Westbrook"],
-      correctSelection: "Oscar Roberston"
-    },
-    {
-      question: "What team name did the Kansas City NBA team have? ",
-      selection: ["Rockets", "Kings", "Stars", "Warriors"],
-      correctSelection: "Kings"
-    },
-    {
-      question: "Which player made 400 3pt shots in a regular season?",
-      selection: ["Ray Allen", "Steve Nash", "Reggie Miller", "Stephen Curry"],
-      correctSelection: "Stephen Curry"
-    },
-    {
-      question: "Which franchise has the most NBA championships?",
-      selection: ["New York Knicks", "Los Angeles Lakers", "Chicago Bulls", "Boston Celtics"],
-      correctSelection: "Boston Celtics"
-    },
-  ];
+    //Pulling questions and multiple choice answers
+
+    function nextQuestion() {
+
+        count++;
+        time = 24;
+        intervalID = setInterval(countdown, 1000);
+
+
+        if (count < nbaTrivia.length) {
+
+
+            $('.question').html(nbaTrivia[count].question);
+
+
+            $('.answer').empty();
+            answerButtons();
+
+        }
+
+        //End of questions, show score, restart game with button
+        else if (count > (nbaTrivia.length - 1)) {
+
+            $('.question').empty();
+            $('.answer').empty();
+            $('.timer').empty();
+            clearInterval(intervalID);
+            time = 0;
+
+            function endGame() {
+
+
+                var gameOver = "<h1> Game Over! Here are the results:</h1>"
+
+                $('.question').html(gameOver);
+
+                var result = "<p> Correct answers:" + correct + "</p> <p> Incorrect answers: " + incorrect + "</p>" + "<p> Unanswered: " + unanswered + "</p>"
+
+                $('.answer').html(result);
+
+            }
+
+            endGame();
+            createReset();
+
+
+        }
+
+    }
+
+
+
+
+    //Creating buttons for multiple choice questions
+
+    function answerButtons() {
+
+        for (i = 0; i < nbaTrivia[count].options.length; i++) {
+
+            var btn = $(document.createElement('button'));
+
+            btn.addClass('btn-lg btn-block answer-buttons');
+
+            var newButton = btn.html(nbaTrivia[count].options[i]);
+
+            $('.answer').append(newButton);
+
+
+        }
+
+        //on click function for answer buttons and capturing user input
+        $('.answer-buttons').on('click', function(event) {
+
+            userSelections = $(this).text();
+            if (userSelections === nbaTrivia[count].answer) {
+                correct++;
+                showCorrectImage();
+                clearInterval(intervalID);
+                nextQuestion();
+            } else {
+                incorrect++;
+                showIncorrectImage();
+                clearInterval(intervalID);
+                nextQuestion();
+            }
+
+        })
+
+    };
+
+
+
+    function createReset() {
+
+
+        var reset = $(document.createElement('button'));
+        reset.addClass('btn-lg btn-block');
+        reset.text('Try Again');
+        reset.appendTo('.answer');
+
+        reset.on('click', function() {
+
+
+            count = -1;
+            correct = 0;
+            incorrect = 0;
+            unanswered = 0;
+
+            reset.remove();
+
+            nextQuestion();
+
+
+        })
+
+    }
+
+    function showCorrectImage() {
+
+        $(".image-holder").html("<img src=" + correctImageArray[count] + " width='400px'><p><h4>Correct!!! The answer is  " + nbaTrivia[count].answer + "</h4></p>");
+        setTimeout(removeImage, 4000);
+
+
+    }
+
+    function showIncorrectImage() {
+
+        $(".image-holder").html("<img src=" + incorrectImageArray[count] + " width='400px'><p><h4> Incorrect: The answer is  " + nbaTrivia[count].answer + "</h4></p>");
+        setTimeout(removeImage, 4000);
+    }
+
+    function removeImage () {
+    	$('.image-holder').empty();
+    }
+
+
+
 });
